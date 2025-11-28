@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="imagens/favicon.png" type="image/x-icon">
+    <title>Calendário Interativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* CALENDAR STYLES */
+        .calendar-container {
+            animation: slideIn 0.3s ease;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .month-year {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+            flex: 1;
+        }
+
+        .nav-btn {
+            background: #667eea;
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .weekday {
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 14px;
+            padding: 10px 0;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #666;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+        }
+
+        .day:hover {
+            background: #e8e8ff;
+            transform: translateY(-2px);
+        }
+
+        .day.active {
+            background: #667eea;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .day.today {
+            border-color: #764ba2;
+            color: #764ba2;
+            font-weight: 700;
+        }
+
+        .day.other-month {
+            color: #ccc;
+            cursor: default;
+        }
+
+        .day.other-month:hover {
+            background: #f5f5f5;
+            transform: none;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .selected-date {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 10px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* TIME SELECTION STYLES */
+        .time-selector {
+            animation: slideIn 0.3s ease;
+        }
+
+        .time-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .back-btn {
+            background: #667eea;
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-btn:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+
+        .time-header-text {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            flex: 1;
+        }
+
+        .time-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .time-slot {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .time-slot:hover:not(.reserved) {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: translateY(-2px);
+        }
+
+        .time-slot.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Estilos para horários reservados */
+        .time-slot.reserved {
+            background: #f5f5f5;
+            border-color: #ccc;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .time-slot.reserved:hover {
+            background: #f5f5f5;
+            transform: none;
+        }
+
+        /* Estilos para mensagem de erro */
+        .error-message {
+            display: none;
+            background: #ff6b6b;
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 15px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        /* CONFIRMATION STYLES */
+        .confirmation {
+            animation: slideIn 0.3s ease;
+            text-align: center;
+        }
+
+        .confirmation-header {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+
+        .confirmation-box {
+            background: #f0f4ff;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .confirmation-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .confirmation-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .btn-confirm {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-back {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-back:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .success-message {
+            display: none;
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .success-message.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- CALENDAR PAGE -->
+        <div class="calendar-container" id="calendarPage">
+            <div class="calendar-header">
+                <button class="nav-btn" onclick="previousMonth()">‹</button>
+                <div class="month-year" id="monthYear"></div>
+                <button class="nav-btn" onclick="nextMonth()">›</button>
+            </div>
+
+            <div class="weekdays">
+                <div class="weekday">Dom</div>
+                <div class="weekday">Seg</div>
+                <div class="weekday">Ter</div>
+                <div class="weekday">Qua</div>
+                <div class="weekday">Qui</div>
+                <div class="weekday">Sex</div>
+                <div class="weekday">Sab</div>
+            </div>
+
+            <div class="days" id="daysContainer"></div>
+
+            <div class="selected-date" id="selectedDate">Selecione uma data</div>
+            <div class="footer">Clique nos dias para selecionar</div>
+        </div>
+
+        <!-- TIME SELECTION PAGE -->
+        <div class="time-selector hidden" id="timePage">
+            <div class="time-header">
+                <button class="back-btn" onclick="goBackToCalendar()">←</button>
+                <div class="time-header-text" id="timeHeaderText">Selecione um horário</div>
+            </div>
+
+            <!-- Mensagem de erro para horários reservados -->
+            <div class="error-message" id="errorMessage">Horário já reservado! Escolha outro.</div>
+
+            <div class="time-grid" id="timeGrid"></div>
+
+            <div class="button-group">
+                <button class="btn btn-back" onclick="goBackToCalendar()">Voltar</button>
+                <button class="btn btn-confirm" onclick="goToConfirmation()">Próximo</button>
+            </div>
+        </div>
+
+        <!-- CONFIRMATION PAGE -->
+        <div class="confirmation hidden" id="confirmationPage">
+            <div class="confirmation-header">Confirmação</div>
+
+            <div class="confirmation-box">
+                <div class="confirmation-label">Data</div>
+                <div class="confirmation-value" id="confirmDate"></div>
+
+                <div class="confirmation-label">Horário</div>
+                <div class="confirmation-value" id="confirmTime"></div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-back" onclick="goBackToTime()">Voltar</button>
+                <button class="btn btn-confirm" onclick="confirmBooking()">Confirmar</button>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                ✓ Agendamento confirmado com sucesso!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let selectedDate = null;
+        let selectedTime = null;
+
+        const reservedSlots = [
+            "2025-11-25 10:00",
+            "2025-11-25 14:30",
+            "2025-11-26 09:00",
+            "2025-11-26 15:00",
+            "2025-11-27 11:30",
+            "2025-11-27 16:30",
+        ];
+
+        function generateTimeSlots() {
+            const slots = [];
+            for (let hour = 8; hour < 18; hour++) {
+                slots.push(`${String(hour).padStart(2, '0')}:00`);
+                slots.push(`${String(hour).padStart(2, '0')}:30`);
+            }
+            return slots;
+        }
+
+        function isTimeSlotReserved(date, time) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const dateString = `${year}-${month}-${day} ${time}`;
+            return reservedSlots.includes(dateString);
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                             'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            document.getElementById('monthYear').textContent = `${monthNames[month]} ${year}`;
+            
+            const daysContainer = document.getElementById('daysContainer');
+            daysContainer.innerHTML = '';
+            
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day other-month';
+                dayElement.textContent = daysInPrevMonth - i;
+                daysContainer.appendChild(dayElement);
+            }
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day';
+                dayElement.textContent = day;
+                
+                const today = new Date();
+                if (day === today.getDate() && 
+                    month === today.getMonth() && 
+                    year === today.getFullYear()) {
+                    dayElement.classList.add('today');
+                }
+                
+                if (selectedDate && 
+                    day === selectedDate.getDate() && 
+                    month === selectedDate.getMonth() && 
+                    year === selectedDate.getFullYear()) {
+                    dayElement.classList.add('active');
+                }
+                
+                dayElement.addEventListener('click', () => selectDate(new Date(year, month, day)));
+                daysContainer.appendChild(dayElement);
+            }
+            
+            const totalCells = daysContainer.children.length;
+            const remainingCells = 42 - totalCells;
+            for (let day = 1; day <= remainingCells; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day other-month';
+                dayElement.textContent = day;
+                daysContainer.appendChild(dayElement);
+            }
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function selectDate(date) {
+            selectedDate = date;
+            const monthNames = ['de janeiro', 'de fevereiro', 'de março', 'de abril', 'de maio', 'de junho',
+                             'de julho', 'de agosto', 'de setembro', 'de outubro', 'de novembro', 'de dezembro'];
+            const dayNames = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            
+            const formattedDate = `${dayNames[date.getDay()]}, ${date.getDate()} ${monthNames[date.getMonth()]} de ${date.getFullYear()}`;
+            document.getElementById('selectedDate').textContent = formattedDate;
+            renderCalendar();
+            
+            showTimePage();
+        }
+
+        function showTimePage() {
+            document.getElementById('calendarPage').classList.add('hidden');
+            document.getElementById('timePage').classList.remove('hidden');
+            
+            const dayNames = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            document.getElementById('timeHeaderText').textContent = `Horários disponíveis em ${dayNames[selectedDate.getDay()]}`;
+            document.getElementById('errorMessage').classList.remove('show');
+            
+            renderTimeSlots();
+        }
+
+        function renderTimeSlots() {
+            const timeGrid = document.getElementById('timeGrid');
+            timeGrid.innerHTML = '';
+            const slots = generateTimeSlots();
+            
+            slots.forEach(slot => {
+                const slotElement = document.createElement('div');
+                slotElement.className = 'time-slot';
+                slotElement.textContent = slot;
+                
+                const reserved = isTimeSlotReserved(selectedDate, slot);
+                if (reserved) {
+                    slotElement.classList.add('reserved');
+                }
+                
+                if (selectedTime === slot) {
+                    slotElement.classList.add('active');
+                }
+                
+                slotElement.addEventListener('click', () => {
+                    if (reserved) {
+                        document.getElementById('errorMessage').classList.add('show');
+                        setTimeout(() => {
+                            document.getElementById('errorMessage').classList.remove('show');
+                        }, 3000);
+                        return;
+                    }
+
+                    document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('active'));
+                    slotElement.classList.add('active');
+                    selectedTime = slot;
+                    document.getElementById('errorMessage').classList.remove('show');
+                });
+                
+                timeGrid.appendChild(slotElement);
+            });
+        }
+
+        function goBackToCalendar() {
+            document.getElementById('timePage').classList.add('hidden');
+            document.getElementById('confirmationPage').classList.add('hidden');
+            document.getElementById('calendarPage').classList.remove('hidden');
+        }
+
+        function goToConfirmation() {
+            if (!selectedTime) {
+                alert('Por favor, selecione um horário');
+                return;
+            }
+
+            const monthNames = ['de janeiro', 'de fevereiro', 'de março', 'de abril', 'de maio', 'de junho',
+                             'de julho', 'de agosto', 'de setembro', 'de outubro', 'de novembro', 'de dezembro'];
+            const dayNames = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            
+            const formattedDate = `${dayNames[selectedDate.getDay()]}, ${selectedDate.getDate()} ${monthNames[selectedDate.getMonth()]} de ${selectedDate.getFullYear()}`;
+            
+            document.getElementById('confirmDate').textContent = formattedDate;
+            document.getElementById('confirmTime').textContent = selectedTime;
+            
+            document.getElementById('timePage').classList.add('hidden');
+            document.getElementById('confirmationPage').classList.remove('hidden');
+        }
+
+        function goBackToTime() {
+            document.getElementById('confirmationPage').classList.add('hidden');
+            document.getElementById('timePage').classList.remove('hidden');
+        }
+
+        function confirmBooking() {
+            document.getElementById('successMessage').classList.add('show');
+
+            const year = selectedDate.getFullYear();
+            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const day = String(selectedDate.getDate()).padStart(2, '0');
+            const newReservation = `${year}-${month}-${day} ${selectedTime}`;
+            reservedSlots.push(newReservation);
+            
+            setTimeout(() => {
+                // Reset everything
+                selectedDate = null;
+                selectedTime = null;
+                currentDate = new Date();
+                
+                document.getElementById('confirmationPage').classList.add('hidden');
+                document.getElementById('calendarPage').classList.remove('hidden');
+                document.getElementById('successMessage').classList.remove('show');
+                
+                document.getElementById('selectedDate').textContent = 'Selecione uma data';
+                renderCalendar();
+            }, 2000);
+        }
+
+        renderCalendar();
+    </script>
+</body>
+</html>
