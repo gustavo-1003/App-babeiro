@@ -35,7 +35,5 @@
     stm.execute() ;
     stm.close() ;
 
-    out.print("<h3>Dados gravados com sucesso!</h3>") ;
-    out.print("<br>") ;
-    out.print("<a href='cadastro.html'>Voltar</a>") ;
+    response.sendRedirect("sucesso.html");
 %>

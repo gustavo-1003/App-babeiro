@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="imagens/favicon.png" type="image/x-icon">
-    <title>Entrar</title>
+    <title>Cadastro com Sucesso</title>
     <style>
         * {
             margin: 0;
@@ -52,83 +51,83 @@
             text-align: center;
         }
 
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #0066ff;
+            border-radius: 50%;
+            margin: 0 auto 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+
         h1 {
             font-size: 28px;
             font-weight: 600;
-            margin-bottom: 50px;
+            margin-bottom: 16px;
             color: #000;
         }
 
-        .form-group {
-            margin-bottom: 24px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: #666;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        input {
-            width: 100%;
-            padding: 8px 0;
-            border: none;
-            border-bottom: 1px solid #ddd;
+        .message {
             font-size: 14px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        input:focus {
-            border-bottom-color: #0066ff;
+            color: #666;
+            margin-bottom: 50px;
+            line-height: 1.6;
         }
 
         .button-wrapper {
-            margin-top: 50px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
         }
 
         button {
-            background-color: #0066ff;
-            color: white;
             border: none;
             padding: 10px 32px;
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
             letter-spacing: 1px;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
         }
 
-        button:hover {
+        .btn-primary {
+            background-color: #0066ff;
+            color: white;
+        }
+
+        .btn-primary:hover {
             background-color: #0052cc;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #000;
+            border: 2px solid #000;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
 <body>
+ 
+
     <div class="container">
-        <h1>Entrar</h1>
+        <div class="success-icon">✓</div>
+        <h1>LOGIN Realizado!</h1>
         
-        <form method="post" action="verificarlogin.jsp">
-            
+        <p class="message">
+            Login Realizado com sucesso
+        </p>
 
-            <div class="form-group">
-                <label for="email">EMAIL</label>
-                <input type="text" id="email" name="email" required>
-            </div>
-
-            <div class="form-group">
-                <label for="senha">SENHA</label>
-                <input type="text" id="senha" name="senha" required>
-            </div>
-
-            <div class="button-wrapper">
-                <button type="submit">SIGN UP</button>
-            </div>
-        </form>
+        <div class="button-wrapper">
+            <a href="index1.html"><button class="btn-primary" onclick="window.location.href='index.html'">INICIAR</button></a>
+        </div>
     </div>
 </body>
 </html>
