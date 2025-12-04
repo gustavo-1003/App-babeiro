@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0d0d0d;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            background-color: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            gap: 30px;
+        }
+
+        .calendar, .hours {
+            background-color: #262626;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        th, td {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        td:hover {
+            background-color: #444;
+        }
+
+        .selected {
+            background-color: white !important;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .hours button {
+            width: 80px;
+            padding: 8px;
+            margin: 5px;
+            background-color: #444;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .hours button.selected {
+            background-color: #b8860b;
+            color: #000;
+        }
+
+        .btn-confirm {
+            margin-top: 20px;
+            background-color: #b8860b;
+            padding: 12px 30px;
+            border: none;
+            color: #000;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <form id="bookingForm" action="agenda.jsp" method="post">
+
+        <!-- Hidden -->
+        <input type="hidden" name="data" id="dataField">
+        <input type="hidden" name="horario" id="horaField">
+        <input type="hidden" name="id_clientes" value="1">
+
+        <div class="container">
+
+            <!-- Calendário -->
+            <div class="calendar">
+                <h2>Selecione a Data</h2>
+                <table id="calendarTable"></table>
+            </div>
+
+            <!-- Horários -->
+            <div class="hours">
+                <h2>Horários</h2>
+                <div id="hoursButtons">
+                    <button type="button" onclick="selectTime('09:00')">09:00</button>
+                    <button type="button" onclick="selectTime('10:00')">10:00</button>
+                    <button type="button" onclick="selectTime('11:00')">11:00</button>
+                    <button type="button" onclick="selectTime('13:00')">13:00</button>
+                    <button type="button" onclick="selectTime('14:00')">14:00</button>
+                    <button type="button" onclick="selectTime('15:00')">15:00</button>
+                </div>
+
+                <button type="time" name="horario" class="btn-confirm" onclick="enviarFormulario()">Confirmar</button>
+            </div>
+
+        </div>
+
+    </form>
+
+<script>
+let selectedDate = null;
+let selectedTime = null;
+
+// Gera o calendário do mês atual
+function gerarCalendario() {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = hoje.getMonth();
+
+    const primeiroDia = new Date(ano, mes, 1);
+    const ultimoDia = new Date(ano, mes + 1, 0);
+
+    let tabela = "<tr>";
+    let diaSemana = primeiroDia.getDay();
+
+    for (let i = 0; i < diaSemana; i++) {
+        tabela += "<td></td>";
+    }
+
+    for (let d = 1; d <= ultimoDia.getDate(); d++) {
+        tabela += `<td onclick="selectDate(${ano}, ${mes}, ${d})">${d}</td>`;
+        if ((d + diaSemana) % 7 === 0) tabela += "</tr><tr>";
+    }
+
+    tabela += "</tr>";
+
+    document.getElementById("calendarTable").innerHTML = tabela;
+}
+
+gerarCalendario();
+
+function selectDate(ano, mes, dia) {
+    selectedDate = new Date(ano, mes, dia);
+
+    document.querySelectorAll("td").forEach(td => td.classList.remove("selected"));
+    event.target.classList.add("selected");
+}
+
+function selectTime(time) {
+    selectedTime = time;
+
+    document.querySelectorAll(".hours button").forEach(btn => btn.classList.remove("selected"));
+    event.target.classList.add("selected");
+}
+
+function enviarFormulario() {
+    if (!selectedDate || !selectedTime) {
+        alert("Selecione uma data e horário");
+        return;
+    }
+
+    const ano = selectedDate.getFullYear();
+    const mes = String(selectedDate.getMonth() + 1).padStart(2, "0");
+    const dia = String(selectedDate.getDate()).padStart(2, "0");
+
+    document.getElementById("dataField").value = `${ano}-${mes}-${dia}`;
+    document.getElementById("horaField").value = selectedTime;
+
+    document.getElementById("bookingForm").submit();
+    
+}
+</script>
+
+</body>
+</html>
